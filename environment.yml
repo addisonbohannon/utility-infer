@@ -1,0 +1,12 @@
+name: utility-infer
+channels:
+  - defaults
+dependencies:
+  - python=3
+  - pip
+  - scipy
+  - numpy
+  - spyder
+  - pip:
+    - setuptools
+
