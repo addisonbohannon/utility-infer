@@ -1,5 +1,5 @@
 ---
-title: "Markov ANOVA"
+title: "Plot experiment 2 results"
 output: html_document
 ---
 
@@ -7,7 +7,7 @@ output: html_document
 
 
 
-```{r data}
+```{r import the AIC, raw error (pred-true) data generated for prudent and myopic at different horizons}
 
 df5 <- read.csv(file ="horizon_5_raw_error_PM.csv")
 df20 <- read.csv(file ="horizon_20_raw_error_PM.csv")
@@ -15,15 +15,15 @@ df30 <- read.csv(file ="horizon_30_raw_error_PM.csv")
 ```
 
 
-```{r plot the grouped bar plot for AIC}
-# Prudent Trajectory
-# subset df5 prudent,prudent
+```{r plot the grouped bar plot for AIC comparing prudent and myopic estimation models (agent) at prudent and myopic data simulations (trajectory)}
+# Prudent Trajectory, or data simulation, for horizons 5 and 30
+# subset df5 prudent agent or estimation model, prudent trajectory or data sim model
 pp <- subset(df5, model_sel_agent == 'prudent_agent' & model_sim_traj == 'prudent_traj',select=c(true,AIC,model_sel_agent))
 pp$model_sel_agent <- gsub("prudent_agent","Prudent",pp$model_sel_agent)
 names(pp)[names(pp) == "model_sel_agent"] <- "Estimation Model"
 names(pp)[names(pp) == "true"] <- "True Risk Parameter"
 
-# subset df5 prudent, myopic
+# subset df5 prudent trajectory, myopic agent
 pm <- subset(df5, model_sel_agent == 'myopic_agent' & model_sim_traj == 'prudent_traj',select=c(true,AIC,model_sel_agent))
 pm$model_sel_agent <- gsub("myopic_agent","Myopic",pm$model_sel_agent)
 names(pm)[names(pm) == "model_sel_agent"] <- "Estimation Model"
@@ -32,13 +32,13 @@ names(pm)[names(pm) == "true"] <- "True Risk Parameter"
 hzn5p <- rbind(pp,pm)
 
 
-# subset df30 prudent,prudent
+# subset df30 prudent agent or estimation model, prudent trajectory or data sim model
 pp <- subset(df30, model_sel_agent == 'prudent_agent' & model_sim_traj == 'prudent_traj',select=c(true,AIC,model_sel_agent))
 pp$model_sel_agent <- gsub("prudent_agent","Prudent",pp$model_sel_agent)
 names(pp)[names(pp) == "model_sel_agent"] <- "Estimation Model"
 names(pp)[names(pp) == "true"] <- "True Risk Parameter"
 
-# subset df30 prudent, myopic
+# subset df30 prudent trajectory, myopic agent
 pm <- subset(df30, model_sel_agent == 'myopic_agent' & model_sim_traj == 'prudent_traj',select=c(true,AIC,model_sel_agent))
 pm$model_sel_agent <- gsub("myopic_agent","Myopic",pm$model_sel_agent)
 names(pm)[names(pm) == "model_sel_agent"] <- "Estimation Model"
@@ -47,14 +47,14 @@ names(pm)[names(pm) == "true"] <- "True Risk Parameter"
 hzn30p <- rbind(pp,pm)
 
 
-# myopic trajectory
-# subset df5 myopic, myopic
+# myopic trajectory, or data simulation, for horizons 5 and 30
+# subset df5 myopic agent or estimation model, myopic trajectory or data simulation model
 mm <- subset(df5, model_sel_agent == 'myopic_agent' & model_sim_traj == 'myopic_traj',select=c(true,AIC,model_sel_agent))
 mm$model_sel_agent <- gsub("myopic_agent","Myopic",mm$model_sel_agent)
 names(mm)[names(mm) == "model_sel_agent"] <- "Estimation Model"
 names(mm)[names(mm) == "true"] <- "True Risk Parameter"
 
-# subset df5 myopic,prudent
+# subset df5 myopic trajectory,prudent agent
 mp <- subset(df5, model_sel_agent == 'prudent_agent' & model_sim_traj == 'myopic_traj',select=c(true,AIC,model_sel_agent))
 mp$model_sel_agent <- gsub("prudent_agent","Prudent",mp$model_sel_agent)
 names(mp)[names(mp) == "model_sel_agent"] <- "Estimation Model"
@@ -63,13 +63,13 @@ names(mp)[names(mp) == "true"] <- "True Risk Parameter"
 hzn5m <- rbind(mm,mp)
 
 
-# subset df30 myopic, myopic
+# subset df30 myopic agent or estimation model, myopic trajectory or data simulation model
 mm <- subset(df30, model_sel_agent == 'myopic_agent' & model_sim_traj == 'myopic_traj',select=c(true,AIC,model_sel_agent))
 mm$model_sel_agent <- gsub("myopic_agent","Myopic",mm$model_sel_agent)
 names(mm)[names(mm) == "model_sel_agent"] <- "Estimation Model"
 names(mm)[names(mm) == "true"] <- "True Risk Parameter"
 
-# subset df30 myopic,prudent
+# subset df30 myopic trajectory,prudent agent
 mp <- subset(df30, model_sel_agent == 'prudent_agent' & model_sim_traj == 'myopic_traj',select=c(true,AIC,model_sel_agent))
 mp$model_sel_agent <- gsub("prudent_agent","Prudent",mp$model_sel_agent)
 names(mp)[names(mp) == "model_sel_agent"] <- "Estimation Model"
@@ -136,7 +136,7 @@ dev.off()
 ```
 
 
-```{r define factors}
+```{r define factors for stat analysis}
 # For horizon 5
 df5$model_sim_traj <- as.factor(df5$model_sim_traj)
 df5$model_sel_agent <- as.factor(df5$model_sel_agent)
@@ -151,7 +151,7 @@ df30$model_sel_agent <- as.factor(df30$model_sel_agent)
 ```
 
 
-```{r aggregate raw errors}
+```{r aggregate raw errors (pred-true risk parameter)}
 # Horizon 5
 agg5 <- aggregate(raw_error ~ model_sim_traj*model_sel_agent,df5, mean)
 agg5sd <- aggregate(raw_error ~ model_sim_traj*model_sel_agent,df5, sd)
@@ -185,11 +185,12 @@ names(agg30)[names(agg30) == "model_sel_agent"] <- "Estimation Model"
 names(agg30)[names(agg30) == "model_sim_traj"] <- "Data Simulation Model"
 names(agg30)[names(agg30) == "raw_error"] <- "Raw Error"
 
+# Get the standard errors of the means
 agg30sd <- subset(agg30sd,select = c("Err bar"))/sqrt(sample_size)
 agg30 <-cbind(agg30, agg30sd)
 
 
-# only keep the prudent data sim models
+# only keep the prudent data simulation models
 agg5 = agg5[-c(1,3),]
 horizon5 <- ggplot(agg5,aes(fill=`Data Simulation Model`, y=`Raw Error`, x=`Estimation Model`)) +
   geom_bar( position=position_dodge(), stat="identity",width=0.75)+
@@ -198,7 +199,7 @@ horizon5 <- ggplot(agg5,aes(fill=`Data Simulation Model`, y=`Raw Error`, x=`Esti
   labs(title="Horizon 5") +
   scale_fill_manual(values=c("#ffa600"))+ylim(min(agg5[,'Raw Error']-agg5[,'Err bar']), max(agg5[,'Raw Error']+agg5[,'Err bar']))
 
-# Only keep the prudent data sim models
+# Only keep the prudent data simulation models
 agg30 = agg30[-c(1,3),]
 horizon30 <- ggplot(agg30,aes(fill=`Data Simulation Model`, y=`Raw Error`, x=`Estimation Model`)) +
   geom_bar( position=position_dodge(), stat="identity",width=0.75)+
@@ -209,7 +210,7 @@ horizon30 <- ggplot(agg30,aes(fill=`Data Simulation Model`, y=`Raw Error`, x=`Es
 
 
 setEPS()
-postscript('ANOVA_plots.eps')
+postscript('plots.eps')
 final_figure <- grid.arrange(horizon5, horizon30, ncol = 1)
 dev.off()
 
@@ -227,7 +228,7 @@ t.test(prudent_myopic30[,"raw_error"],prudent_prudent30[,"raw_error"],var.equal=
 ```
 
 
-```{r}
+```{r additional ANOVA analysis}
 print("Horizon 5")
 # my_lm <-lm(raw_error ~ model_sim_traj*model_sel_agent,data=df5)
 # summary(my_lm)
